@@ -1,0 +1,58 @@
+directive @authorize(policy: [String]) on OBJECT | QUERY | FIELD_DEFINITION
+
+type Contract {
+    name: String!
+    policyNo: String!
+    policyValue: Float!
+    password: String! @authorize(policy: ["IS_INVESTOR"])
+    brokers: [Broker!]
+}
+
+type Broker {
+    name : String!
+    brokerCanEdit : Boolean!
+    brokerCanWithdraw : Boolean!
+}
+
+input ContractInput {
+    name: String!
+    policyNo: String!
+    policyValue: Float!
+    password: String!
+    brokers: [BrokerInput!]
+}
+
+input BrokerInput {
+    name : String!
+    brokerCanEdit : Boolean!
+    brokerCanWithdraw : Boolean!
+}
+
+type newWithdrawalOutput {
+    policyNo: String!
+    amount: Float!
+}
+
+type Query {
+    "return contract item"
+    getContract(policyNo: String!): Contract! @authorize(policy:["GET_CONTRACT"])
+
+}
+
+type Mutation {
+    editContract(policyNo: String!, amount: Float!): String @authorize(policy:["EDIT_CONTRACT"])
+    withdrawContract(policyNo: String!, amount: Float!): String @authorize(policy:["WITHDRAW_CONTRACT"])
+    deleteContract(policyNo: String!): String @authorize(policy:["DELETE_CONTRACT"])
+}
+
+type Subscription {
+    newWithdrawal: newWithdrawalOutput
+}
+
+schema {
+    mutation: Mutation
+    query: Query
+    subscription: Subscription
+}
+
+
